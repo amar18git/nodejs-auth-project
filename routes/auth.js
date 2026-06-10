@@ -56,4 +56,59 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.patch("/users/:id", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const updateData = {};
+
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.delete("/users/:id", async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
 module.exports = router;
